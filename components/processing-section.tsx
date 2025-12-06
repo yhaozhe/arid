@@ -37,7 +37,7 @@ export function ProcessingSection() {
             : "I've analyzed your floor plan"
 
           addMessage(currentProject.id, {
-            id: crypto.randomUUID(),
+            id: `${Date.now()}`,
             role: "assistant",
             content: `${promptContext}\n\nI've detected this as a **${currentProject.roomType.replace("-", " ")}** and created a ${currentProject.stylePreset} design. The space is approximately 32m² with optimal furniture placement.\n\nYou can now:\n• Chat to refine colors, furniture, or style\n• Toggle measurements and grid overlay\n• Export in multiple formats\n\nTry saying "make it warmer" or "switch to minimalist style"!`,
             timestamp: new Date(),
