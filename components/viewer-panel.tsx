@@ -2,9 +2,14 @@
 
 import { Suspense, useMemo } from "react"
 import { Canvas } from "@react-three/fiber"
-import { OrbitControls, Environment, ContactShadows, PresentationControls, Text } from "@react-three/drei"
+import { OrbitControls, Environment, ContactShadows, PresentationControls, Text, useGLTF } from "@react-three/drei"
 import { useAppStore } from "@/lib/store"
 import type { RoomType, FurnitureItem } from "@/lib/types"
+
+function GeneratedModel({ url }: { url: string }) {
+  const { scene } = useGLTF(url)
+  return <primitive object={scene} />
+}
 
 function Room() {
   const { getCurrentProject, showMeasurements, lighting } = useAppStore()
@@ -16,6 +21,16 @@ function Room() {
 
   const isNight = lighting === "night"
 
+  // If backend returned a GLB URL, render that scene instead of procedural geometry
+  if (project?.glbUrl) {
+    return (
+      <group>
+        <GeneratedModel url={project.glbUrl} />
+      </group>
+    )
+  }
+
+  // Fallback: existing procedural room and furniture
   return (
     <group>
       {/* Floor */}

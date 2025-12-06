@@ -19,20 +19,24 @@ import {
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
-import { useAppStore, defaultSceneConfigs, getRoomFurniture } from "@/lib/store"
-import type { RoomType, StylePreset, Project, DesignVersion, SceneConfig } from "@/lib/types"
+import { useAppStore } from "@/lib/store"
+import type { Project } from "@/lib/types"
 
 export function UploadSection() {
   const { setAppState, addProject, setCurrentProjectId } = useAppStore()
 
   const [isDragActive, setIsDragActive] = useState(false)
   const [preview, setPreview] = useState<string | null>(null)
+  const [file, setFile] = useState<File | null>(null)
   const [prompt, setPrompt] = useState("")
   const [isHovering, setIsHovering] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0]
     if (file) {
+      setFile(file)
       const reader = new FileReader()
       reader.onload = () => {
         setPreview(reader.result as string)
@@ -49,45 +53,61 @@ export function UploadSection() {
     onDragLeave: () => setIsDragActive(false),
   })
 
-  const handleTransform = () => {
-    if (!preview) return
+  const handleTransform = async () => {
+    if (!file || !preview || isSubmitting) return
 
-    // AI will auto-detect room type based on image (simulated here)
-    const detectedRoomType: RoomType = "living-room"
-    const detectedStyle: StylePreset = "modern"
+    setError(null)
+    setIsSubmitting(true)
 
-    const projectId = crypto.randomUUID()
-    const versionId = crypto.randomUUID()
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("prompt", prompt)
 
-    const sceneConfig: SceneConfig = { ...defaultSceneConfigs[detectedStyle] }
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        body: formData,
+      })
 
-    const initialVersion: DesignVersion = {
-      id: versionId,
-      name: "Initial Design",
-      timestamp: new Date(),
-      stylePreset: detectedStyle,
-      furnitureItems: getRoomFurniture(detectedRoomType, detectedStyle),
-      sceneConfig,
+      if (!res.ok) {
+        throw new Error("Failed to generate design")
+      }
+
+      const data: {
+        projectId: string
+        name: string
+        roomType: Project["roomType"]
+        stylePreset: Project["stylePreset"]
+        glbUrl: string
+      } = await res.json()
+
+      const now = new Date()
+
+      const project: Project = {
+        id: data.projectId,
+        name: data.name || prompt.slice(0, 30) || "Untitled Design",
+        description: prompt,
+        initialPrompt: prompt,
+        floorPlanImage: preview,
+        chatHistory: [],
+        versions: [],
+        currentVersionId: "",
+        createdAt: now,
+        updatedAt: now,
+        roomType: data.roomType,
+        stylePreset: data.stylePreset,
+        aiAnalysis: undefined,
+        glbUrl: data.glbUrl,
+      }
+
+      addProject(project)
+      setCurrentProjectId(project.id)
+      setAppState("processing")
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong")
+    } finally {
+      setIsSubmitting(false)
     }
-
-    const project: Project = {
-      id: projectId,
-      name: prompt.slice(0, 30) || "Untitled Design",
-      description: prompt,
-      initialPrompt: prompt,
-      floorPlanImage: preview,
-      chatHistory: [],
-      versions: [initialVersion],
-      currentVersionId: versionId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      roomType: detectedRoomType,
-      stylePreset: detectedStyle,
-    }
-
-    addProject(project)
-    setCurrentProjectId(projectId)
-    setAppState("processing")
   }
 
   const features = [
@@ -170,7 +190,11 @@ export function UploadSection() {
                         variant="secondary"
                         size="icon"
                         className="absolute top-3 right-3 h-8 w-8 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => setPreview(null)}
+                        onClick={() => {
+                          setPreview(null)
+                          setFile(null)
+                          setError(null)
+                        }}
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -209,10 +233,11 @@ export function UploadSection() {
                     <Button
                       onClick={handleTransform}
                       size="lg"
-                      className="gap-2 bg-gradient-to-r from-accent to-emerald-500 text-accent-foreground hover:opacity-90 shadow-lg shadow-accent/25 px-8"
+                      disabled={!file || isSubmitting}
+                      className="gap-2 bg-gradient-to-r from-accent to-emerald-500 text-accent-foreground hover:opacity-90 shadow-lg shadow-accent/25 px-8 disabled:opacity-60"
                     >
                       <Wand2 className="h-4 w-4" />
-                      Generate 3D Design
+                      {isSubmitting ? "Generating..." : "Generate 3D Design"}
                       <ArrowRight className="h-4 w-4" />
                     </Button>
                   </div>
@@ -263,6 +288,12 @@ export function UploadSection() {
               )}
             </div>
           </div>
+
+          {error && (
+            <div className="mt-4 mx-auto max-w-3xl text-sm text-red-500 bg-red-500/10 border border-red-500/40 rounded-xl px-4 py-3">
+              {error}
+            </div>
+          )}
 
           {/* Feature pills */}
           <div className="flex flex-wrap justify-center gap-3 mt-12">

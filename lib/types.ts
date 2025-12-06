@@ -66,6 +66,7 @@ export interface Project {
   roomType: RoomType
   stylePreset: StylePreset
   aiAnalysis?: AIAnalysisResponse
+  glbUrl?: string
 }
 
 export interface FurnitureItem {
