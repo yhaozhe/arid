@@ -108,7 +108,10 @@ export function UploadSection() {
             className="absolute bottom-20 right-[10%] w-[400px] h-[400px] bg-gradient-to-tr from-purple-500/10 via-accent/10 to-transparent rounded-full blur-[80px] animate-float"
             style={{ animationDelay: "-2s" }}
           />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-radial from-accent/5 to-transparent rounded-full" />
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full"
+            style={{ background: "radial-gradient(circle, oklch(0.72 0.17 162 / 0.05), transparent)" }}
+          />
         </div>
 
         {/* Grid pattern */}
