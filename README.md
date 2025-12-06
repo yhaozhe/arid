@@ -1,9 +1,78 @@
-# Interior design app
+# ARID
 
-*Automatically synced with your [v0.app](https://v0.app) deployments*
+Frontend for **ARID** – upload a floor plan and prompt, get back a 3D scene rendered with React Three Fiber.
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/dhafabiz-8336s-projects/v0-interior-design-app)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/hbwKiMpQEyk)
+This repo currently contains the **Next.js frontend** in the root (or in `frontend/` if you moved it). Below are the steps to install and run it locally.
+
+## Prerequisites
+
+- Node.js (LTS recommended)
+- `pnpm` installed globally:
+
+```bash
+npm install -g pnpm
+```
+
+## Install dependencies
+
+If the app is in the root (you see `app/`, `components/`, `package.json` in this folder):
+
+```bash
+cd arid
+pnpm install
+```
+
+If the app is inside `frontend/`:
+
+```bash
+cd arid/frontend
+pnpm install
+```
+
+## Run the development server
+
+From the frontend folder (`.` or `frontend/` depending on layout):
+
+```bash
+pnpm dev
+```
+
+Next.js will print a URL, usually:
+
+- `http://localhost:3000` (or another port like `3001`/`3002` if 3000 is in use)
+
+Open that URL in your browser.
+
+### If you see a lock error
+
+If you get:
+
+```text
+Unable to acquire lock at .next/dev/lock, is another instance of next dev running?
+```
+
+Stop all `node` dev processes and clear the `.next` cache, then start again (PowerShell example):
+
+```powershell
+Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force
+cd D:\arid-frontend\frontend   # adjust if your path is different
+Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue
+pnpm dev
+```
+
+## Usage flow
+
+1. Open the app in your browser.
+2. Upload a floor plan image (PNG/JPG/WEBP).
+3. Type a text prompt describing the desired room.
+4. Click **Generate 3D Design**.
+5. Frontend sends `file` + `prompt` to the backend endpoint `/api/generate`.
+6. Backend responds with a `.glb` URL.
+7. The viewer loads that `.glb` via `useGLTF` and displays the 3D room.
+
+## Backend API
+
+For the expected backend contract (`POST /generate` and the JSON shape with `glbUrl`), see `BACKEND_API_SPEC.md` in this repo.
 
 ## Overview
 
