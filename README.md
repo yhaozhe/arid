@@ -2,7 +2,7 @@
 
 Frontend for **ARID** – upload a floor plan and prompt, get back a 3D scene rendered with React Three Fiber.
 
-This repo currently contains the **Next.js frontend** in the root (or in `frontend/` if you moved it). Below are the steps to install and run it locally.
+This repo currently contains the **Next.js frontend** in the `frontend/` folder. Below are the steps to install and run it locally.
 
 ## Prerequisites
 
@@ -15,15 +15,6 @@ npm install -g pnpm
 
 ## Install dependencies
 
-If the app is in the root (you see `app/`, `components/`, `package.json` in this folder):
-
-```bash
-cd arid
-pnpm install
-```
-
-If the app is inside `frontend/`:
-
 ```bash
 cd arid/frontend
 pnpm install
@@ -31,7 +22,7 @@ pnpm install
 
 ## Run the development server
 
-From the frontend folder (`.` or `frontend/` depending on layout):
+From the frontend folder (`frontend/`):
 
 ```bash
 pnpm dev
